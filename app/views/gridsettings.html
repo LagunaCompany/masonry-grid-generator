@@ -1,0 +1,146 @@
+<div ng-controller="GridsettingsCtrl as gridSettingsCtrl">
+
+    <div class="jumbotron">
+        <h2>Grid Settings</h2>
+        <p class="lead">We need to know a few things about the grid you want.</p>
+        <p>Complete the form, and you'll be able to click the big buttons below.</p>
+        <button type="button" ng-class="testMethod('hasItems', 'btn-success', 'disabled')" class="btn btn-lg" data-toggle="modal" data-target="#gridCss">Get Grid CSS <span ng-class="testMethod('hasItems', 'glyphicon-check', '')" class="glyphicon"></span></button>
+        <a type="button" ng-show="grid.isPercentageBased" class="btn btn-lg btn-primary" ng-href="#/items">Set Item Aspect Ratios <span class="glyphicon glyphicon-chevron-right"></span></a>
+    </div>
+
+    <div class="container">
+
+        <div class="control-group">
+            <div class="controls">
+                <div class="checkbox-inline">
+                    <label>
+                      <input type="checkbox" name="endScreenContent" value="true" ng-model="grid.isPercentageBased"> This grid is percentage-based.
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <div class="checkbox-inline">
+                    <label>
+                      <input type="checkbox" name="endScreenContent" value="true" ng-model="grid.isFullWidth"> This grid is full width. (The Design width value below will be used to calculate grid settings.)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group input-group-lg">
+            <span class="input-group-addon">Design width (pixels)</span>
+            <input type="number" class="form-control" placeholder="Pixel value" aria-describedby="basic-addon1" ng-model="grid.designWidth" ng-change="columnCountChangeHandler()">
+        </div>
+
+        <div class="input-group input-group-lg" ng-show="grid.isFullWidth">
+            <span class="input-group-addon">Maximum width (pixels)</span>
+            <input type="number" class="form-control" placeholder="Pixel value" aria-describedby="basic-addon1" ng-model="grid.maxWidth">
+        </div>
+
+        <div class="input-group input-group-lg" ng-show="grid.isFullWidth">
+            <span class="input-group-addon">Minimum width (pixels)</span>
+            <input type="number" class="form-control" placeholder="Pixel value" aria-describedby="basic-addon1" ng-model="grid.minWidth">
+        </div>
+
+        <div class="input-group input-group-lg">
+            <span class="input-group-addon">Number of columns</span>
+            <input type="number" class="form-control" aria-describedby="basic-addon1" ng-model="grid.columnCount" min="2" ng-change="columnCountChangeHandler()">
+        </div>
+
+        <div class="alert alert-info">
+            <p>Below are all the valid column width and gutter width combinations for your chosen layout settings.<br />
+                Make sure you pick a combination!</p>
+
+            <div class="form-group">
+                <select class="form-control" ng-change="gutterComboHandler()" data-ng-model="grid.itemDimensions" data-ng-options="'Column width: ' + combo.columnWidth +' pixels, gutter: ' + combo.gutter + ' pixels' for combo in gutterCombos">
+                    <option value="">Select column width and gutter combination</option>
+                </select>
+            </div>
+
+            <p ng-hide="gutterCombos.length > 0" class="alert alert-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Your chosen layout settings don't produce valid column/gutter combinations!<br />
+                Please adjust them and try again.</p>
+
+        </div>
+
+    </div>
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title" id="panel-title">Visual Grid Preview<a class="anchorjs-link" href="#grid-preview"><span class="anchorjs-icon"></span></a></h3>
+        </div>
+        <div class="panel-body">          
+            <div class="grid-preview" style="width: {{grid.designWidth}}px;" ng-show="grid.items.length > 0">
+
+                <div class="grid-preview-item" ng-repeat="item in grid.items" style="margin-right: {{grid.itemDimensions.gutter}}px; width: {{grid.itemDimensions.columnWidth}}px;"></div>
+                
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="gridCss" tabindex="-1" role="dialog" aria-labelledby="gridCssLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="gridCssLabel">Grid CSS</h4>
+                </div>
+                <div class="modal-body">
+
+                    <p>Copy the CSS shown below into a stylesheet or somewhere the grid layout can access it.</p>                    
+
+                    <pre><code class="language-css" data-lang="css">/***** Grid settings/calculations start here *****/
+
+<span ng-show="grid.isFullWidth">/* Full width container */
+#wrapper_page_body {
+    <span ng-show="grid.maxWidth">max-width: {{grid.maxWidth}}px;</span>
+    <span ng-show="grid.minWidth">min-width: {{grid.minWidth}}px;</span>
+    width: 100%;
+}</span>
+
+/* Masonry will use the following reference elements to lay out items -
+    they're NOT meant to hold content. */
+.masonry-col-sizer { width: {{grid.itemDimensions.columnWidth | percentage: grid.designWidth:grid.isPercentageBased | append: grid.isPercentageBased}}; }
+<span ng-show="grid.itemDimensions.gutter > 0">.masonry-gutter-sizer { width: {{grid.itemDimensions.gutter | percentage: grid.designWidth:grid.isPercentageBased | append: grid.isPercentageBased}}; }
+
+<span ng-show="grid.isPercentageBased">/* In theory this should be the same as the .masonry-gutter-sizer width,
+    but it's best to round up slightly to ensure items are pushed down far enough
+    so Masonry doesn't switch their order when it calculates spacing. */</span>
+.masonry-item { margin-bottom: {{grid.itemDimensions.gutter | percentage: grid.designWidth:grid.isPercentageBased | round: grid.isPercentageBased | append: grid.isPercentageBased}}; }
+</span>
+
+/* Column widths - these take gutters into account */
+<span ng-repeat="item in grid.items">.masonry-cols-{{($index + 1).toString()}} { width: {{item.width | percentage: grid.designWidth:grid.isPercentageBased | append: grid.isPercentageBased}}; }<br /></span>
+/***** Grid settings/calculations end here *****/</code></pre>
+
+                    <h3>Helper Classes</h3>
+
+                    <p>Here is a list of all helper classes generated. Apply a suitable class to a Masonry item to set its width.</p>
+
+                    <table class="table table-striped table-bordered table-hover">
+                        <tr>
+                            <th>Width</th>
+                            <th>Helper Class</th>
+                        </tr>
+                        <tr ng-repeat="item in grid.items">
+                            <td>{{item.width | percentage: grid.designWidth:grid.isPercentageBased | append: grid.isPercentageBased}}</td>
+                            <td class="alert alert-info">masonry-cols-{{$index+1}}</td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <hr />
+    <p>Debug area - grid model</p>
+    <pre>{{grid}}</pre>
+    <p>Debug area - valid column width/gutter combinations</p>
+    <pre>{{gutterCombos}}</pre> -->
+</div>

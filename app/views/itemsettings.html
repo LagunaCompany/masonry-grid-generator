@@ -1,0 +1,137 @@
+<div ng-controller="ItemsettingsCtrl as itemSettingsCtrl">
+
+    <div class="jumbotron">
+        <h2>Item Aspect Ratios</h2>
+        <p class="lead">Because you previously chose a percentage-based layout,<br />Masonry may need some additional information<br />to keep the correct width/height ratio for each item,<br />especially if the content isn't just an image.</p>
+        <a class="btn btn-lg btn-primary" ng-href="#/grid"><span class="glyphicon glyphicon-chevron-left"></span> Back to Grid Settings</a>
+        <button type="button" class="btn btn-lg btn-success" data-toggle="modal" data-target="#itemCss">Get Item CSS <span class="glyphicon glyphicon-check"></span></button>
+    </div>
+
+    <div class="container">
+
+        <p class="lead">Enter widths and heights, and this app will give you helper classes to apply to individual items.</p>
+
+        <div class="alert alert-info" role="alert">           
+            <p>Separate width/height combinations may produce identical aspect ratios, but as long as you use the helper classes and CSS generated here, everything should be fine!</p>
+        </div>
+
+        <button type="button" class="btn btn-lg btn-primary" ng-click="addItemSettings()">Add Item <span class="glyphicon glyphicon-plus"></span></button>
+
+        <hr />
+
+        <form class="form-inline">
+            <div class="panel itemSetting" ng-repeat="item in itemSettings">
+
+                <div class="form-group">
+                    <label for="itemWidth">Width (pixels)</label>
+                    <input type="number" class="form-control" id="itemWidth" min="1" ng-model="item.width">
+                </div>
+
+                <div class="form-group">
+                    <label for="itemHeight">Height (pixels)</label>
+                    <input type="number" class="form-control" id="itemHeight" min="1" ng-model="item.height">
+                </div>
+
+                <button type="submit" class="btn btn-danger" ng-click="removeItemSettings($index)" ng-show="$index > 0"><span class="glyphicon glyphicon-remove"></span></button>
+
+            </div>
+        </form>
+
+    </div>
+
+    <div class="modal fade" id="itemCss" tabindex="-1" role="dialog" aria-labelledby="itemCssLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="itemCssLabel">Item CSS and Helper Classes</h4>
+                </div>
+                <div class="modal-body">
+
+                    <h3>CSS</h3>
+
+                    <p>Copy the CSS shown below into a stylesheet or somewhere the grid layout can access it.</p>                
+
+                    <pre><code class="language-html" data-lang="html">/***** Item aspect ratios start here *****/
+
+/* Some CSS magic that uses padding-top percentages to help preserve the item aspect ratios:
+    http://stackoverflow.com/questions/12121090/responsively-change-div-size-keeping-aspect-ratio */
+.masonry-item {
+    display: inline-block;
+    position: relative;
+}
+
+.masonry-item:after {
+    content: '';
+    display: block;
+}
+
+.masonry-item-inner {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+    top: 0;
+}
+
+<span ng-repeat="item in itemSettings">.masonry-item-ratio-{{$index+1}}:after { padding-top: {{getAspectRatio(item.width, item.height)}}%; }<br /></span>
+/***** Item aspect ratios end here *****/</code></pre>
+
+                <h3>Helper Classes</h3>
+
+                <p>Here is a list of all helper classes generated. Apply a suitable class to a Masonry item to preserve its width/height aspect ratio.</p>
+
+                <table class="table table-striped table-bordered table-hover">
+                    <tr>
+                        <th>Width</th>
+                        <th>Height</th>
+                        <th>Aspect Ratio</th>
+                        <th>Preview</th>
+                        <th>Helper Class</th>
+                    </tr>
+                    <tr ng-repeat="item in itemSettings">
+                        <td>{{item.width}}</td>
+                        <td>{{item.height}}</td>
+                        <td>{{getAspectRatio(item.width, item.height)}}%</td>
+                        <td>
+                            <div class="ratioOuter">
+                                <div class="ratioInner"></div>
+                                <div class="after" style="padding-top: {{getAspectRatio(item.width, item.height)}}%;"></div>
+                            </div>
+                        </td>
+                        <td class="alert alert-info">masonry-item-ratio-{{$index+1}}</td>
+                    </tr>
+                </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="itemHelperClasses" tabindex="-1" role="dialog" aria-labelledby="itemHelperClassesLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="itemHelperClassesLabel">Item Helper Classes</h4>
+                </div>
+                <div class="modal-body">
+
+                    
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!--     <hr />
+    <p>Debug area - itemSettings model</p>
+    <pre>{{itemSettings}}</pre> -->
+
+</div>
